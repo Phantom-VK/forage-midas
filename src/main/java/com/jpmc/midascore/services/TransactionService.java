@@ -7,13 +7,16 @@ import com.jpmc.midascore.foundation.Transaction;
 import com.jpmc.midascore.repository.TransactionRecordRepository;
 import com.jpmc.midascore.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+@Service
 public class TransactionService {
 
     @Autowired
     private UserRepository userRepo;
+
     @Autowired
     private TransactionRecordRepository txRepo;
 
@@ -23,51 +26,47 @@ public class TransactionService {
     @Transactional
     public void processTransaction(Transaction transaction) {
 
-        //Find sender by id from our db
+        // Try to find sender and recipient from DB
         UserRecord sender = userRepo.findById(transaction.getSenderId());
-        //Find the recipient by id from our db
         UserRecord recipient = userRepo.findById(transaction.getRecipientId());
 
-        //Validate transaction
-        if (sender != null && recipient != null && sender.getBalance() >= transaction.getAmount()) {
+        // Validate that both users exist and sender has enough balance
+        if (sender == null || recipient == null) return;
+        if (sender.getBalance() < transaction.getAmount()) return;
 
-            //Get incentive
-            float incentiveAmount = getIncentive(transaction);
-            //Update sender balance
-            sender.setBalance(sender.getBalance() - transaction.getAmount());
+        // Fetch incentive amount from external incentive service
+        float incentiveAmount = fetchIncentive(transaction);
 
-            //Add incentive to recipient's balance only'
-            recipient.setBalance(recipient.getBalance() + transaction.getAmount() + incentiveAmount);
+        // Deduct amount from sender
+        sender.setBalance(sender.getBalance() - transaction.getAmount());
 
-            //Save users
-            userRepo.save(sender);
-            userRepo.save(recipient);
+        // Add amount + incentive to recipient
+        recipient.setBalance((float) (recipient.getBalance() + transaction.getAmount() + incentiveAmount));
 
-            //We create a new transaction record, and add details to it
-            TransactionRecord txRecord = new TransactionRecord();
-            txRecord.setSender(sender);
-            txRecord.setIncentive(incentiveAmount);
-            txRecord.setRecipient(recipient);
-            txRecord.setAmount(transaction.getAmount());
+        // Persist updated user balances
+        userRepo.save(sender);
+        userRepo.save(recipient);
 
-            //Finally, we save the transaction
-            txRepo.save(txRecord);
+        // Log the transaction in the transaction table
+        TransactionRecord txRecord = new TransactionRecord(
+                sender, recipient, transaction.getAmount(),  incentiveAmount);
 
-        }
-
-
+        txRepo.save(txRecord);
     }
 
-    private float getIncentive(Transaction transaction) {
-        //Get incentive from the incentive service
-        Incentive incentive = restTemplate.postForObject(
-                "http://localhost:8080/incentive",
-                transaction,
-                Incentive.class
-        );
 
-        //Get incentive
-        assert incentive != null;
-        return incentive.getAmount();
+    private float fetchIncentive(Transaction transaction) {
+        try {
+            Incentive incentive = restTemplate.postForObject(
+                    "http://localhost:8080/incentive",
+                    transaction,
+                    Incentive.class
+            );
+            return (incentive != null) ? incentive.getAmount() : 0f;
+        } catch (Exception e) {
+            // Log the failure and continue with 0 incentive
+            System.err.println("Failed to fetch incentive: " + e.getMessage());
+            return 0f;
+        }
     }
 }

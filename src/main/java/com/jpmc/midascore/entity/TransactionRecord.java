@@ -4,9 +4,10 @@ import jakarta.persistence.*;
 
 @Entity
 public class TransactionRecord {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue()
+    private long id;
 
     @ManyToOne
     private UserRecord sender;
@@ -14,21 +15,46 @@ public class TransactionRecord {
     @ManyToOne
     private UserRecord recipient;
 
+    @Column(nullable = false)
     private float amount;
 
+    @Column(nullable = false)
     private float incentive;
 
-    public void setSender(UserRecord sender) {
+    protected TransactionRecord() {
+    }
+
+    public TransactionRecord(UserRecord sender, UserRecord recipient, float amount, float incentive) {
         this.sender = sender;
-    }
-    public void setRecipient(UserRecord recipient) {
         this.recipient = recipient;
-    }
-    public void setAmount(float amount) {
         this.amount = amount;
-    }
-    public void setIncentive(float incentive) {
         this.incentive = incentive;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public UserRecord getSender() {
+        return sender;
+    }
+
+    public UserRecord getRecipient() {
+        return recipient;
+    }
+
+    public float getAmount() {
+        return amount;
+    }
+
+    public float getIncentive() {
+        return incentive;
+    }
+
+    @Override
+    public String toString() {
+        return "TransactionRecord {sender=" + sender.toString() + ", recipient=" + recipient.toString() + ", amount=" + amount +
+                ", incentive=" + incentive + "}";
     }
 }
 

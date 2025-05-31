@@ -18,15 +18,22 @@ public class KafkaConsumer {
     private static final Logger logger = LoggerFactory.getLogger(KafkaConsumer.class);
 
     @Autowired
-    TransactionService transactionService;
+    private TransactionService transactionService;
+
 
     @Transactional
     @KafkaListener(topics = TOPIC, groupId = GROUP_ID)
     public void listen(Transaction transaction) {
+        logger.info("Received transaction: {}", transaction);
 
-        transactionService.processTransaction(transaction);
-
+        try {
+            transactionService.processTransaction(transaction);
+            logger.info("Processed transaction for senderId={}, recipientId={}, amount={}",
+                    transaction.getSenderId(),
+                    transaction.getRecipientId(),
+                    transaction.getAmount());
+        } catch (Exception e) {
+            logger.error("Error processing transaction: {}", transaction, e);
+        }
     }
-
 }
-
