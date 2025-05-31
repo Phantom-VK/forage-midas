@@ -2,6 +2,7 @@
 Project repository for the **JPMC Advanced Software Engineering Virtual Experience** on Forage.
 
 ![Certificate](assets/completion_certificate.png)
+![Certificate Link](https://forage-uploads-prod.s3.amazonaws.com/completion-certificates/Sj7temL583QAYpHXD/E6McHJDKsQYh79moz_Sj7temL583QAYpHXD_uJLPADKzu3bmQkzxa_1748684124952_completion_certificate.pdf)
 
 ---
 
