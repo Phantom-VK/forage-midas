@@ -30,7 +30,7 @@ It’s part of the virtual internship simulation offered by **J.P. Morgan & Co. 
 
 ## 📸 Certificate
 
-> Located at `certs/jpmc-advanced-software-cert.png`
+> Located at `assets/jpmc-advanced-software-cert.png`
 
 ---
 
