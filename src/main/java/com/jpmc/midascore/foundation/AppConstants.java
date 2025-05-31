@@ -1,4 +1,4 @@
-package com.jpmc.midascore.entity;
+package com.jpmc.midascore.foundation;
 
 public class AppConstants {
 

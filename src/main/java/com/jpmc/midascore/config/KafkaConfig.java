@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
-import static com.jpmc.midascore.entity.AppConstants.TOPIC;
+import static com.jpmc.midascore.foundation.AppConstants.TOPIC;
 
 @Configuration
 public class KafkaConfig {
